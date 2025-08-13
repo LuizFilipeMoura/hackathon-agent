@@ -3,6 +3,7 @@
 import { GitHubIssueAgent } from './agent';
 import 'dotenv/config';
 
+
 async function main() {
     const args = process.argv.slice(2);
 
@@ -13,26 +14,26 @@ async function main() {
     }
 
     const [owner, repo, issueNumberStr] = args;
+    console.log("owner:", owner, "repo:", repo, "issueNumberStr:", issueNumberStr);
     const issueNumber = parseInt(issueNumberStr);
-
     if (!process.env.ANTHROPIC_API_KEY) {
         console.error('❌ ANTHROPIC_API_KEY environment variable is required');
         process.exit(1);
     }
 
-    // Fetch issue details using GitHub API or MCP tools
-    // For now, using placeholder data
-    const issueContext = {
-        owner,
-        repo,
-        issueNumber,
-        title: `Issue #${issueNumber}`, // Would fetch from GitHub
-        body: 'Issue body would be fetched from GitHub API',
-        labels: []
-    };
+    if (!process.env.GITHUB_PERSONAL_ACCESS_TOKEN) {
+        console.error('❌ GITHUB_PERSONAL_ACCESS_TOKEN environment variable is required');
+        process.exit(1);
+    }
 
     const agent = new GitHubIssueAgent(process.env.ANTHROPIC_API_KEY);
-    await agent.solveIssue(issueContext);
+
+    try {
+        await agent.initialize();
+        await agent.solveIssue({ owner, repo, issueNumber });
+    } finally {
+        await agent.close();
+    }
 }
 
 main().catch(console.error);

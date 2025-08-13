@@ -1,35 +1,62 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
 interface IssueContext {
     owner: string;
     repo: string;
     issueNumber: number;
-    title: string;
-    body: string;
-    labels: string[];
 }
 
-export class GitHubIssueAgent {
+class GitHubIssueAgent {
     private anthropic: Anthropic;
+    private mcpClient: Client;
 
     constructor(apiKey: string) {
         this.anthropic = new Anthropic({
             apiKey,
         });
+        this.mcpClient = new Client(
+            {
+                name: "github-agent",
+                version: "1.0.0",
+            },
+            {
+                capabilities: {}
+            }
+        );
+    }
+
+    async initialize(): Promise<void> {
+        // Connect to GitHub MCP server
+        const transport = new StdioClientTransport({
+            command: "npx",
+            args: ["-y", "@modelcontextprotocol/server-github"],
+            env: {
+                ...process.env,
+                GITHUB_PERSONAL_ACCESS_TOKEN: process.env.GITHUB_PERSONAL_ACCESS_TOKEN
+            }
+        });
+
+        await this.mcpClient.connect(transport);
+        console.log("🔗 Connected to GitHub MCP server");
     }
 
     async solveIssue(context: IssueContext): Promise<void> {
         try {
-            console.log(`🔍 Analyzing issue #${context.issueNumber}: ${context.title}`);
+            console.log(`🔍 Analyzing issue #${context.issueNumber}: ${context.owner}/${context.repo}`);
 
-            // Get repository context first
-            await this.getRepositoryContext(context);
+            // Get issue details using MCP
+            const issue = await this.callMCPTool('get_issue', {
+                owner: context.owner,
+                repo: context.repo,
+                issue_number: context.issueNumber
+            });
 
-            // Analyze the issue and determine solution approach
-            const solution = await this.analyzeAndPlanSolution(context);
+            console.log(`📋 Issue: ${issue.title}`);
 
-            // Execute the solution
-            await this.executeSolution(context, solution);
+            // Let Claude analyze and solve using MCP tools
+            await this.analyzeAndSolve(context, issue);
 
             console.log(`✅ Issue #${context.issueNumber} processing complete!`);
         } catch (error) {
@@ -38,91 +65,97 @@ export class GitHubIssueAgent {
         }
     }
 
-    private async getRepositoryContext(context: IssueContext): Promise<void> {
-        const prompt = `
-I need to solve issue #${context.issueNumber} in ${context.owner}/${context.repo}.
+    private async callMCPTool(toolName: string, params: any): Promise<any> {
+        console.log("[callMCPTool] Tool call called:", toolName);
+        const {tools} = await this.mcpClient.listTools();
+        console.log("[callMCPTool] Tool call schema:", tools.find(t => t.name === toolName)?.inputSchema);
 
-Title: ${context.title}
-Description: ${context.body}
-Labels: ${context.labels.join(', ')}
-
-First, please help me understand the repository structure and the issue context by:
-1. Getting the repository file structure
-2. Reading relevant files if needed
-3. Understanding the codebase
-
-Use the GitHub MCP tools to explore the repository.
-`;
-
-        await this.anthropic.messages.create({
-            model: 'claude-3-5-sonnet-20241022',
-            max_tokens: 4000,
-            messages: [{role: 'user', content: prompt}],
+        const result = await this.mcpClient.callTool({
+            name: toolName,
+            arguments: params
         });
+        console.log("[callMCPTool] Tool call result:", result);
+        return JSON.parse(result.content[0]?.text);
     }
 
-    private async analyzeAndPlanSolution(context: IssueContext): Promise<string> {
-        const prompt = `
-Now that I understand the repository context, please analyze this issue and create a detailed plan:
+    private async analyzeAndSolve(context: IssueContext, issue: any): Promise<void> {
+        // Create a system prompt that tells Claude it has access to GitHub MCP tools
+        const systemPrompt = `You are a GitHub issue solver with access to GitHub MCP tools. 
+You can use tools like:
+- get_file_contents
+- create_branch  
+- create_or_update_file
+- create_pull_request
+- add_issue_comment
+And many others.
 
-Issue #${context.issueNumber}: ${context.title}
-${context.body}
+Your task is to solve the given GitHub issue by:
+1. Understanding the repository and issue context
+2. Creating a solution plan
+3. Implementing the fix
+4. Creating a pull request
+5. Updating the issue
 
-Please:
-1. Identify the root cause of the issue
-2. Propose a specific solution approach
-3. List the files that need to be modified
-4. Provide the exact changes needed
+Be methodical and thorough.`;
 
-If this is a bug, provide a fix. If it's a feature request, implement the feature.
-Return your analysis and plan.
-`;
+        const userPrompt = `Please solve this GitHub issue:
 
+**Repository**: ${context.owner}/${context.repo}
+**Issue #${context.issueNumber}**: ${issue.title}
+**Description**: ${issue.body}
+**Labels**: ${issue.labels?.map((l: any) => l.name).join(', ') || 'None'}
+
+Start by exploring the repository structure and understanding the codebase, then implement a solution.`;
+
+        // Use Claude with function calling enabled
         const response = await this.anthropic.messages.create({
             model: 'claude-3-5-sonnet-20241022',
             max_tokens: 4000,
-            messages: [{role: 'user', content: prompt}],
+            system: systemPrompt,
+            messages: [{ role: 'user', content: userPrompt }],
+            tools: await this.getAvailableTools(),
+            tool_choice: { type: "auto" }
         });
-        console.log("[analyzeAndPlanSolution] Response:", response.content[0]);
+        console.log("Claude's response:", response);
 
-        return response.content[0].type === 'text' ? response.content[0].text : '';
+        // Process Claude's response and execute any tool calls
+        await this.processResponse(response);
     }
 
-    private async executeSolution(context: IssueContext, solution: string): Promise<void> {
-        const prompt = `
-Based on the analysis: ${solution}
+    private async getAvailableTools(): Promise<any[]> {
+        const tools = await this.mcpClient.listTools();
 
-Now please implement the solution by:
-1. Creating a new branch for this fix
-2. Making the necessary code changes
-3. Creating a pull request with proper description
-4. Adding a comment to the original issue linking to the PR
+        // Convert MCP tool format to Anthropic tool format
+        return tools.tools.map((tool: any) => ({
+            name: tool.name,
+            description: tool.description,
+            input_schema: tool.inputSchema
+        }));
+    }
 
-Use the GitHub MCP tools to execute these steps.
-`;
+    private async processResponse(response: any): Promise<void> {
+        for (const content of response.content) {
+            if (content.type === 'tool_use') {
+                console.log(`🔧 Executing: ${content.name}`);
 
-        const response = await this.anthropic.messages.create({
-            model: 'claude-3-5-sonnet-20241022',
-            max_tokens: 4000,
-            messages: [{role: 'user', content: prompt}],
-        });
-        console.log("[executeSolution] Response:", response.content[0]);
+                try {
+                    const result = await this.callMCPTool(content.name, content.input);
+                    console.log(`✅ Tool result:`, result);
 
+                    // Continue conversation with Claude if needed
+                    // This would require a more complex conversation loop
+                } catch (error) {
+                    console.error(`❌ Tool execution failed:`, error);
+                }
+            } else if (content.type === 'text') {
+                console.log('💭 Claude says:', content.text);
+            }
+        }
+    }
+
+    async close(): Promise<void> {
+        await this.mcpClient.close();
     }
 }
 
-// Usage example
-async function main() {
-    const agent = new GitHubIssueAgent(process.env.ANTHROPIC_API_KEY!);
-
-    // Example: solve an issue
-    await agent.solveIssue({
-        owner: 'your-org',
-        repo: 'your-repo',
-        issueNumber: 123,
-        title: 'Bug: Login form validation not working',
-        body: 'The login form accepts empty passwords...',
-        labels: ['bug', 'frontend']
-    });
-}
-
+export { GitHubIssueAgent };
