@@ -1,0 +1,38 @@
+{
+  "name": "hackathon-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src_old/agent.ts",
+    "solve": "tsx src/cli.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LuizFilipeMoura/hackathon-agent.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LuizFilipeMoura/hackathon-agent/issues"
+  },
+  "homepage": "https://github.com/LuizFilipeMoura/hackathon-agent#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.59.0",
+    "@langchain/core": "^0.3.70",
+    "@langchain/langgraph": "^0.4.4",
+    "@modelcontextprotocol/sdk": "^1.17.2",
+    "dotenv": "^17.2.1",
+    "openai": "^5.12.2",
+    "ws": "^8.18.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2"
+  }
+}
