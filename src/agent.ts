@@ -1,6 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import {Client} from '@modelcontextprotocol/sdk/client/index.js';
+import {StdioClientTransport} from '@modelcontextprotocol/sdk/client/stdio.js';
+import * as fs from "fs";
+import * as path from "path";
+
 
 interface IssueContext {
     owner: string;
@@ -65,6 +68,10 @@ class GitHubIssueAgent {
         }
     }
 
+    async close(): Promise<void> {
+        await this.mcpClient.close();
+    }
+
     private async callMCPTool(toolName: string, params: any): Promise<any> {
         console.log("[callMCPTool] Tool call called:", toolName);
         const {tools} = await this.mcpClient.listTools();
@@ -78,8 +85,73 @@ class GitHubIssueAgent {
         return JSON.parse(result.content[0]?.text);
     }
 
+    /** Final comment/labels/close */
+    private async finalizeIssue(
+        context: IssueContext,
+        data: { prUrl?: string; branch?: string; messages: any[] }
+    ) {
+        const {owner, repo, issueNumber} = context;
+        const summary = this.summarizeOutcome(data);
+
+        // Prefer MCP tool if you expose it; otherwise Octokit:
+        await this.callMCPTool("add_issue_comment", {
+            owner, repo, issue_number: issueNumber,
+            body:
+                `${summary}\n\n` +
+                (data.prUrl ? `**PR**: ${data.prUrl}\n` : "") +
+                (data.branch ? `**Branch**: ${data.branch}\n` : "")
+        });
+
+        // Optional: labels/state
+        // await this.github.addLabels({ owner, repo, issue_number: issueNumber, labels: ["bot:proposed-fix"] });
+        // Optionally close if PR merged / CI green (gate this carefully!)
+    }
+
+    private summarizeOutcome(data: { prUrl?: string; branch?: string; messages: any[] }) {
+        // Keep it short; you can extract the last assistant text from messages if helpful
+        const lines = [];
+        lines.push("### 🤖 Issue Solver Summary");
+        if (data.branch) lines.push(`- Created branch: \`${data.branch}\``);
+        if (data.prUrl) lines.push(`- Opened PR: ${data.prUrl}`);
+        lines.push("- See build logs & diffs in the PR.");
+        return lines.join("\n");
+    }
+
+    private async getAvailableTools(): Promise<any[]> {
+        const tools = await this.mcpClient.listTools();
+
+        // Convert MCP tool format to Anthropic tool format
+        return tools.tools.map((tool: any) => ({
+            name: tool.name,
+            description: tool.description,
+            input_schema: tool.inputSchema
+        }));
+    }
+
+    private async processResponse(response: any): Promise<void> {
+        for (const content of response.content) {
+            if (content.type === 'tool_use') {
+                console.log(`🔧 Executing: ${content.name}`);
+
+                try {
+                    const result = await this.callMCPTool(content.name, content.input);
+                    console.log(`✅ Tool result:`, result);
+                    return result
+                    // Continue conversation with Claude if needed
+                    // This would require a more complex conversation loop
+                } catch (error) {
+                    console.error(`❌ Tool execution failed:`, error);
+                }
+            } else if (content.type === 'text') {
+                console.log('💭 Claude says:', content.text);
+            }
+        }
+    }
+
     private async analyzeAndSolve(context: IssueContext, issue: any): Promise<void> {
-        // Create a system prompt that tells Claude it has access to GitHub MCP tools
+        console.log("[analyzeAndSolve] ENTER", JSON.stringify({ repo: `${context.owner}/${context.repo}`, issue: issue?.title }));
+
+        // --- prompts --------------------------------------------------------------
         const systemPrompt = `You are a GitHub issue solver with access to GitHub MCP tools. 
 You can use tools like:
 - get_file_contents
@@ -107,55 +179,115 @@ Be methodical and thorough.`;
 
 Start by exploring the repository structure and understanding the codebase, then implement a solution.`;
 
-        // Use Claude with function calling enabled
-        const response = await this.anthropic.messages.create({
-            model: 'claude-3-5-sonnet-20241022',
-            max_tokens: 4000,
-            system: systemPrompt,
-            messages: [{ role: 'user', content: userPrompt }],
-            tools: await this.getAvailableTools(),
-            tool_choice: { type: "auto" }
-        });
-        console.log("Claude's response:", response);
+        // --- conversation state ---------------------------------------------------
+        const messages: Array<{ role: "user" | "assistant"; content: any }> = [
+            { role: "user", content: userPrompt }
+        ];
+        console.log("[analyzeAndSolve] Seed messages length:", messages.length);
 
-        // Process Claude's response and execute any tool calls
-        await this.processResponse(response);
-    }
+        const tools = await this.getAvailableTools();
+        console.log("[analyzeAndSolve] Tools provided to model:", tools.length);
 
-    private async getAvailableTools(): Promise<any[]> {
-        const tools = await this.mcpClient.listTools();
+        const maxSteps = 6;      // give Claude a few cycles
+        let step = 0;
+        let prUrl: string | undefined;
+        let branch: string | undefined;
 
-        // Convert MCP tool format to Anthropic tool format
-        return tools.tools.map((tool: any) => ({
-            name: tool.name,
-            description: tool.description,
-            input_schema: tool.inputSchema
-        }));
-    }
+        while (step++ < maxSteps) {
+            console.log(`\n[loop] STEP ${step}/${maxSteps} → calling Claude…`);
+            const resp = await this.anthropic.messages.create({
+                model: "claude-3-5-sonnet-20241022",
+                system: systemPrompt,
+                messages,
+                tools,
+                tool_choice: { type: "auto" },
+                max_tokens: 4000,
+            });
+            console.log(`[loop] stop_reason=${resp.stop_reason}`);
+            console.log("[loop] assistant blocks:", resp.content?.map((b: any) => b.type));
 
-    private async processResponse(response: any): Promise<void> {
-        for (const content of response.content) {
-            if (content.type === 'tool_use') {
-                console.log(`🔧 Executing: ${content.name}`);
+            // 1) ALWAYS append assistant content immediately
+            messages.push({ role: "assistant", content: resp.content });
 
-                try {
-                    const result = await this.callMCPTool(content.name, content.input);
-                    console.log(`✅ Tool result:`, result);
+            // 2) Find tool calls requested in this assistant turn
+            const toolUses = resp.content.filter((b: any) => b.type === "tool_use");
+            console.log("[loop] tool_use count:", toolUses.length);
 
-                    // Continue conversation with Claude if needed
-                    // This would require a more complex conversation loop
-                } catch (error) {
-                    console.error(`❌ Tool execution failed:`, error);
-                }
-            } else if (content.type === 'text') {
-                console.log('💭 Claude says:', content.text);
+            if (toolUses.length === 0) {
+                console.log("[loop] No tool_use blocks → treating as final answer, exiting loop.");
+                break;
             }
+
+            // 3) Execute all tool calls, collect results
+            const executed = [];
+            for (const tc of toolUses) {
+                console.log("[loop] Executing tool:", tc.name, "id:", tc.id, "args:", JSON.stringify(tc.input));
+                try {
+                    // Use your MCP helper directly (don’t call processResponse here)
+                    const result = await this.callMCPTool(tc.name, tc.input);
+                    console.log("[loop] Tool result keys:", result && typeof result === "object" ? Object.keys(result) : typeof result);
+
+                    // Capture useful artifacts if present
+                    if (!prUrl && result?.url && /\/pull\/\d+/.test(result.url)) {
+                        prUrl = result.url;
+                        console.log("[loop] captured prUrl:", prUrl);
+                    }
+                    if (!branch && (result?.branch || result?.ref)) {
+                        branch = result.branch || result.ref;
+                        console.log("[loop] captured branch:", branch);
+                    }
+
+                    executed.push({
+                        type: "tool_result",
+                        tool_use_id: tc.id,
+                        // Claude is happiest with a short string; stringify objects
+                        content: typeof result === "string" ? result : JSON.stringify(result),
+                    });
+                } catch (err: any) {
+                    console.log("[loop] Tool ERROR:", tc.name, "->", err?.message || String(err));
+                    executed.push({
+                        type: "tool_result",
+                        tool_use_id: tc.id,
+                        content: `Error: ${err?.message || String(err)}`,
+                        is_error: true,
+                    });
+                }
+            }
+
+            // 4) IMMEDIATELY reply with ONE user message that contains ONLY tool_result blocks
+            console.log("[loop] Posting tool_results, count:", executed.length);
+            messages.push({ role: "user", content: executed });
+
+            // (Optionally snapshot the transcript for debugging)
+            try { saveJsonToFile(messages, `messages_after_step_${step}.json`); } catch {}
         }
+
+        console.log("[analyzeAndSolve] Loop finished. prUrl:", prUrl, "branch:", branch);
+
+        // 5) Finalize (post summary comment via MCP)
+        await this.finalizeIssue(context, { prUrl, branch, messages });
+        console.log("[analyzeAndSolve] finalizeIssue complete.");
     }
 
-    async close(): Promise<void> {
-        await this.mcpClient.close();
-    }
 }
 
-export { GitHubIssueAgent };
+export {GitHubIssueAgent};
+
+export function saveJsonToFile(
+    obj: Record<string, any>,
+    filename = "output.json",
+    directory?: string
+) {
+    // Resolve full file path
+    const filePath = directory
+        ? path.resolve(directory, filename)
+        : path.resolve(process.cwd(), filename);
+
+    // Convert object to JSON string with indentation
+    const jsonString = JSON.stringify(obj, null, 2);
+
+    // Write to file
+    fs.writeFileSync(filePath, jsonString, "utf8");
+
+    console.log(`[saveJsonToFile] JSON saved to ${filePath}`);
+}
