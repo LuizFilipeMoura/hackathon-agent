@@ -1,4 +1,3 @@
-// retrieve.ts
 import { searchTopK } from "./ragdb";
 
 export async function retrieveSimilarContext(query: string, k = 5): Promise<string> {
@@ -6,7 +5,7 @@ export async function retrieveSimilarContext(query: string, k = 5): Promise<stri
     if (!hits.length) return "";
     return [
         "## Retrieved similar items (local RAG)",
-        ...hits.map((h, i) =>
+        ...hits.map((h: { id: any; similarity: number; url: any; text: string; }, i: number) =>
             `### #${i + 1} — id=${h.id} (sim=${h.similarity.toFixed(3)})` +
             (h.url ? ` — ${h.url}` : "") + `\n` +
             h.text.slice(0, 1200)

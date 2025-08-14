@@ -3,7 +3,7 @@ import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {StdioClientTransport} from '@modelcontextprotocol/sdk/client/stdio.js';
 import * as fs from "fs";
 import * as path from "path";
-import {retrieveSimilarContext} from "./retrieve";
+import {retrieveSimilarContext} from "./retrieveSimilarContext";
 import {upsertItems} from "./ragdb"; // at top with other imports
 
 
@@ -165,12 +165,13 @@ Your task is to solve the given GitHub issue by:
 3. Implementing the fix
 4. Creating a pull request
 5. Updating the issue
+6. When updating the issue, share any related issues and how is it related to the current. This is mandatory
 
 If the task is more complex than a simple fix, break it down into smaller steps and tackle them one at a time, making sure that the long term goal is achieved and explain the trade-offs of each decision.
 Be methodical and thorough.
 Use prior art from similar issues if it accelerates a correct, minimal fix.
 Prefer surgical diffs
-${similarBlock ? `${similarBlock}\n` : ""}, on your fix comment, share any related issues and how is it related to the current issue. This is mandatory, if no related issues are found, just say "No related issues found.".
+${similarBlock ? `${similarBlock}\n` : ""}.
 `;
 
 

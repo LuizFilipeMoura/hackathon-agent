@@ -1,4 +1,3 @@
-// ragdb.ts
 import { connect } from "@lancedb/lancedb";
 import { Field, Schema, Utf8, Float32, FixedSizeList, List } from "apache-arrow";
 import { embed } from "./emb";
@@ -26,7 +25,7 @@ export async function openTable() {
 
     // Create if missing — with an explicit Arrow schema
     try {
-        return await db.openTable<Row>(TABLE_NAME);
+        return await db.openTable(TABLE_NAME);
     } catch {
         const dim = 384; // all-MiniLM-L6-v2
         const schema = new Schema([

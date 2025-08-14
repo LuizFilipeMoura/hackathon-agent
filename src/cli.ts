@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { GitHubIssueAgent } from './agent';
 import 'dotenv/config';
 

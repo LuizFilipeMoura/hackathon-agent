@@ -1,16 +1,13 @@
-// emb.ts
 import {pipeline} from "@xenova/transformers";
-import {saveJsonToFile} from "./agent";
-
-// (Optional) run fully offline after first download by pinning a local folder:
-// env.localModelPath = "./models"; // then prefetch below and keep the files.
-// Tips: env.backends.onnx.wasm.numThreads = 4; // tune CPU threads
 
 let _pipe: any;
 
 async function getPipe() {
     if (_pipe) return _pipe;
     // All‑MiniLM‑L6‑v2 = 384‑dim sentence embeddings, fast & solid
+    // This pipeline type outputs embeddings (vector representations), not text
+    // Produces 384-dimensional embeddings.
+    // Optimized for semantic similarity tasks.
     _pipe = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
     return _pipe;
 }
@@ -19,6 +16,8 @@ async function getPipe() {
 export async function embed(text: string): Promise<number[]> {
     const pipe = await getPipe();
     // The pipeline supports pooling/normalize options for sentence embeddings
+    // pooling: "mean" → The model produces an embedding vector for each token (word/piece of the input), so pooling tells it how to collapse all those token vectors into a single sentence-level vector.
+    // normalize: true → Applies L2 normalization so the resulting vector has unit length (important for cosine similarity to work correctly).
     const output = await pipe(text, {pooling: "mean", normalize: true});
     // output is a TypedArray
     return Array.from(output.data as Float32Array);
