@@ -1,4 +1,4 @@
-import { sum, subtract, multiply, divide } from './operations';
+import { sum, subtract, multiply, divide, exponentiate } from './operations';
 
 describe('Math Operations', () => {
   describe('sum', () => {
@@ -68,6 +68,37 @@ describe('Math Operations', () => {
 
     it('should throw error when dividing by zero', () => {
       expect(() => divide(5, 0)).toThrow('Division by zero is not allowed');
+    });
+  });
+
+  describe('exponentiate', () => {
+    it('should calculate powers correctly for positive bases and exponents', () => {
+      expect(exponentiate(2, 3)).toBe(8); // 2^3 = 8
+      expect(exponentiate(3, 2)).toBe(9); // 3^2 = 9
+      expect(exponentiate(5, 1)).toBe(5); // 5^1 = 5
+    });
+
+    it('should handle zero base', () => {
+      expect(exponentiate(0, 3)).toBe(0); // 0^3 = 0
+      expect(exponentiate(0, 1)).toBe(0); // 0^1 = 0
+    });
+
+    it('should handle zero exponent', () => {
+      expect(exponentiate(5, 0)).toBe(1); // 5^0 = 1
+      expect(exponentiate(0, 0)).toBe(1); // 0^0 = 1 (mathematical convention)
+    });
+
+    it('should handle negative bases', () => {
+      expect(exponentiate(-2, 2)).toBe(4);  // (-2)^2 = 4
+      expect(exponentiate(-2, 3)).toBe(-8); // (-2)^3 = -8
+    });
+
+    it('should throw error for non-integer exponents', () => {
+      expect(() => exponentiate(2, 1.5)).toThrow('Exponent must be an integer');
+    });
+
+    it('should throw error for negative exponents', () => {
+      expect(() => exponentiate(2, -1)).toThrow('Negative exponents are not supported');
     });
   });
 });
