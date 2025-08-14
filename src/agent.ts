@@ -168,6 +168,7 @@ Your task is to solve the given GitHub issue by:
 4. Creating a pull request
 5. Updating the issue
 
+If the task is more complex than a simple fix, break it down into smaller steps and tackle them one at a time, making sure that the long term goal is achieved and explain the trade-offs of each decision.
 Be methodical and thorough.`;
 
         const userPrompt = `Please solve this GitHub issue:
@@ -188,7 +189,7 @@ Start by exploring the repository structure and understanding the codebase, then
         const tools = await this.getAvailableTools();
         console.log("[analyzeAndSolve] Tools provided to model:", tools.length);
 
-        const maxSteps = 6;      // give Claude a few cycles
+        const maxSteps = 15;      // give Claude a few cycles
         let step = 0;
         let prUrl: string | undefined;
         let branch: string | undefined;
