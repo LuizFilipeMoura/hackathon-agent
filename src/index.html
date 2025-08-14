@@ -11,93 +11,51 @@
             margin: 0 auto;
             padding: 20px;
         }
-        .calculator {
-            background-color: #f5f5f5;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .input-group {
-            margin-bottom: 15px;
-        }
-        input[type="number"] {
-            width: 100px;
-            padding: 8px;
-            margin-right: 10px;
-        }
-        button {
-            padding: 8px 15px;
+        .operation-button {
             margin: 5px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #result {
-            margin-top: 20px;
             padding: 10px;
-            background-color: #e9ecef;
-            border-radius: 4px;
+            font-size: 16px;
+        }
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        input {
+            padding: 5px;
+            font-size: 16px;
+            margin: 5px;
         }
         .tutorial-link {
-            display: inline-block;
-            background-color: #28a745;
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-        .tutorial-link:hover {
-            background-color: #218838;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+            display: block;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="calculator">
-        <div class="header">
-            <h1>Calculator</h1>
-            <a href="tutorial.html" class="tutorial-link">How to Use</a>
-        </div>
-        <div class="input-group">
-            <input type="number" id="num1" placeholder="First number">
-            <input type="number" id="num2" placeholder="Second number">
-        </div>
-        <div class="operations">
-            <button onclick="calculate('sum')">Add (+)</button>
-            <button onclick="calculate('subtract')">Subtract (-)</button>
-            <button onclick="calculate('multiply')">Multiply (×)</button>
-            <button onclick="calculate('divide')">Divide (÷)</button>
-        </div>
-
-        <div id="result">
-            Result: <span id="output">---</span>
-        </div>
+    <h1>Calculator</h1>
+    <div>
+        <input type="number" id="num1" placeholder="Number 1">
+        <input type="number" id="num2" placeholder="Number 2">
     </div>
+    <div>
+        <button class="operation-button" onclick="performOperation('sum')">Add</button>
+        <button class="operation-button" onclick="performOperation('subtract')">Subtract</button>
+        <button class="operation-button" onclick="performOperation('multiply')">Multiply</button>
+        <button class="operation-button" onclick="performOperation('divide')">Divide</button>
+        <button class="operation-button" onclick="performOperation('exponentiate')">Power</button>
+        <button class="operation-button" onclick="performOperation('squareRoot')">Square Root</button>
+    </div>
+    <div class="result" id="result"></div>
+    <a href="tutorial.html" class="tutorial-link">View Tutorial</a>
 
     <script type="module">
-        import { sum, subtract, multiply, divide } from './math/operations.js';
+        import { sum, subtract, multiply, divide, exponentiate, squareRoot } from './operations.js';
 
-        window.calculate = async function(operation) {
+        window.performOperation = function(operation) {
             const num1 = parseFloat(document.getElementById('num1').value);
             const num2 = parseFloat(document.getElementById('num2').value);
-
-            if (isNaN(num1) || isNaN(num2)) {
-                document.getElementById('output').textContent = 'Please enter valid numbers';
-                return;
-            }
-
             let result;
+
             try {
                 switch(operation) {
                     case 'sum':
@@ -112,10 +70,16 @@
                     case 'divide':
                         result = divide(num1, num2);
                         break;
+                    case 'exponentiate':
+                        result = exponentiate(num1, num2);
+                        break;
+                    case 'squareRoot':
+                        result = squareRoot(num1);
+                        break;
                 }
-                document.getElementById('output').textContent = result;
+                document.getElementById('result').textContent = `Result: ${result}`;
             } catch (error) {
-                document.getElementById('output').textContent = error.message;
+                document.getElementById('result').textContent = `Error: ${error.message}`;
             }
         };
     </script>
