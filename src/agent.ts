@@ -165,7 +165,7 @@ Your task is to solve the given GitHub issue by:
 3. Implementing the fix
 4. Creating a pull request
 5. Updating the issue
-6. When updating the issue, share any related issues and how is it related to the current. This is mandatory
+6. When updating the issue and also when creating the PR, share any related issues and how is it related to the current. This is mandatory
 
 If the task is more complex than a simple fix, break it down into smaller steps and tackle them one at a time, making sure that the long term goal is achieved and explain the trade-offs of each decision.
 Be methodical and thorough.

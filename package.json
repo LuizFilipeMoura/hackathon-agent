@@ -7,7 +7,8 @@
     "test": "jest",
     "dev": "tsx watch src_old/agent.ts",
     "solve": "tsx src/cli.ts",
-    "ingest": "tsx src/internal/ingest-github.ts"
+    "ingest": "tsx src/internal/ingest-github.ts",
+    "compile_operations": "tsc src/math/operations.ts --target ES2020 --module ES2020 --outDir src/math"
   },
   "repository": {
     "type": "git",

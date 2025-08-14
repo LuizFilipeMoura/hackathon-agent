@@ -79,18 +79,19 @@
             <button onclick="calculate('multiply')">Multiply (×)</button>
             <button onclick="calculate('divide')">Divide (÷)</button>
         </div>
+
         <div id="result">
             Result: <span id="output">---</span>
         </div>
     </div>
 
     <script type="module">
-        import { sum, subtract, multiply, divide } from './math/operations.ts';
+        import { sum, subtract, multiply, divide } from './math/operations.js';
 
         window.calculate = async function(operation) {
             const num1 = parseFloat(document.getElementById('num1').value);
             const num2 = parseFloat(document.getElementById('num2').value);
-            
+
             if (isNaN(num1) || isNaN(num2)) {
                 document.getElementById('output').textContent = 'Please enter valid numbers';
                 return;
