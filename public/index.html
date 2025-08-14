@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .calculator {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .button-group {
+            margin: 10px 0;
+        }
+        button {
+            padding: 8px 16px;
+            margin-right: 8px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 100px;
+        }
+        .tutorial-link {
+            display: block;
+            margin: 20px 0;
+            color: #2196F3;
+            text-decoration: none;
+        }
+        .tutorial-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculator App</h1>
+    
+    <a href="tutorial.html" class="tutorial-link">📚 Need help? View Tutorial</a>
+
+    <div class="calculator">
+        <div class="input-group">
+            <input type="number" id="num1" placeholder="First number">
+            <input type="number" id="num2" placeholder="Second number">
+        </div>
+        <div class="button-group">
+            <button onclick="calculate('add')">Add (+)</button>
+            <button onclick="calculate('subtract')">Subtract (-)</button>
+            <button onclick="calculate('multiply')">Multiply (×)</button>
+            <button onclick="calculate('divide')">Divide (÷)</button>
+        </div>
+        <div class="result">
+            <p>Result: <span id="result">-</span></p>
+        </div>
+    </div>
+
+    <script src="../src/calculator.js"></script>
+    <script>
+        function calculate(operation) {
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+            let result;
+
+            switch(operation) {
+                case 'add':
+                    result = add(num1, num2);
+                    break;
+                case 'subtract':
+                    result = subtract(num1, num2);
+                    break;
+                case 'multiply':
+                    result = multiply(num1, num2);
+                    break;
+                case 'divide':
+                    result = divide(num1, num2);
+                    break;
+            }
+
+            document.getElementById('result').textContent = result;
+        }
+    </script>
+</body>
+</html>
