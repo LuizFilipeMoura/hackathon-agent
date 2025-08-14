@@ -43,11 +43,32 @@
             background-color: #e9ecef;
             border-radius: 4px;
         }
+        .tutorial-link {
+            display: inline-block;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .tutorial-link:hover {
+            background-color: #218838;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="calculator">
-        <h1>Calculator</h1>
+        <div class="header">
+            <h1>Calculator</h1>
+            <a href="tutorial.html" class="tutorial-link">How to Use</a>
+        </div>
         <div class="input-group">
             <input type="number" id="num1" placeholder="First number">
             <input type="number" id="num2" placeholder="Second number">
