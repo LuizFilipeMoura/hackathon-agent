@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Operations Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .calculator {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        .operation-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            font-size: 1.2em;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Math Operations Calculator</h1>
+        
+        <div class="input-group">
+            <label for="number1">First Number:</label>
+            <input type="number" id="number1" placeholder="Enter first number">
+        </div>
+        
+        <div class="input-group">
+            <label for="number2">Second Number:</label>
+            <input type="number" id="number2" placeholder="Enter second number">
+        </div>
+
+        <div class="operation-buttons">
+            <button onclick="calculate('sum')">Add (+)</button>
+            <button onclick="calculate('subtract')">Subtract (-)</button>
+            <button onclick="calculate('multiply')">Multiply (×)</button>
+            <button onclick="calculate('divide')">Divide (÷)</button>
+            <button onclick="calculate('exponentiate')">Power (^)</button>
+            <button onclick="calculate('squareRoot')">Square Root (√)</button>
+        </div>
+
+        <div id="result">Result will appear here</div>
+    </div>
+
+    <script type="module">
+        import { sum, subtract, multiply, divide, exponentiate, squareRoot } from './src/math/operations.js';
+
+        window.calculate = function(operation) {
+            const num1 = parseFloat(document.getElementById('number1').value);
+            const num2 = parseFloat(document.getElementById('number2').value);
+            const resultDiv = document.getElementById('result');
+
+            try {
+                let result;
+                switch(operation) {
+                    case 'sum':
+                        result = sum(num1, num2);
+                        break;
+                    case 'subtract':
+                        result = subtract(num1, num2);
+                        break;
+                    case 'multiply':
+                        result = multiply(num1, num2);
+                        break;
+                    case 'divide':
+                        result = divide(num1, num2);
+                        break;
+                    case 'exponentiate':
+                        result = exponentiate(num1, num2);
+                        break;
+                    case 'squareRoot':
+                        result = squareRoot(num1);
+                        break;
+                }
+                resultDiv.textContent = `Result: ${result}`;
+            } catch (error) {
+                resultDiv.textContent = `Error: ${error.message}`;
+            }
+        };
+    </script>
+</body>
+</html>
