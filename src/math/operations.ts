@@ -62,3 +62,22 @@ export const bhaskara = (a: number, b: number, c: number): BhaskaraResult => {
 
     return { x1, x2 };
 };
+
+export const sin = (degrees: number): number => {
+    // Convert degrees to radians and calculate sine
+    return Math.sin(degrees * Math.PI / 180);
+};
+
+export const cos = (degrees: number): number => {
+    // Convert degrees to radians and calculate cosine
+    return Math.cos(degrees * Math.PI / 180);
+};
+
+export const tan = (degrees: number): number => {
+    // Check for undefined tangent at odd multiples of 90 degrees
+    if (degrees % 90 === 0 && degrees % 180 !== 0) {
+        throw new Error('Tangent is undefined for degrees that are odd multiples of 90');
+    }
+    // Convert degrees to radians and calculate tangent
+    return Math.tan(degrees * Math.PI / 180);
+};
