@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .calculator {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 3px;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+        }
+        input {
+            margin: 5px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>Calculator</h2>
+        <div>
+            <input type="number" id="num1" placeholder="Number 1">
+            <input type="number" id="num2" placeholder="Number 2">
+        </div>
+        <div>
+            <button onclick="calculate('sum')">Add</button>
+            <button onclick="calculate('subtract')">Subtract</button>
+            <button onclick="calculate('multiply')">Multiply</button>
+            <button onclick="calculate('divide')">Divide</button>
+            <button onclick="calculate('exponentiate')">Power</button>
+            <button onclick="calculateSqrt()">Square Root</button>
+        </div>
+        <div class="result" id="result">Result will appear here</div>
+    </div>
+
+    <script type="module">
+        import { sum, subtract, multiply, divide, exponentiate, squareRoot } from './src/math/operations.js';
+
+        window.calculate = function(operation) {
+            const num1 = Number(document.getElementById('num1').value);
+            const num2 = Number(document.getElementById('num2').value);
+            let result;
+
+            try {
+                switch(operation) {
+                    case 'sum':
+                        result = sum(num1, num2);
+                        break;
+                    case 'subtract':
+                        result = subtract(num1, num2);
+                        break;
+                    case 'multiply':
+                        result = multiply(num1, num2);
+                        break;
+                    case 'divide':
+                        result = divide(num1, num2);
+                        break;
+                    case 'exponentiate':
+                        result = exponentiate(num1, num2);
+                        break;
+                }
+                document.getElementById('result').textContent = `Result: ${result}`;
+            } catch (error) {
+                document.getElementById('result').textContent = `Error: ${error.message}`;
+            }
+        }
+
+        window.calculateSqrt = function() {
+            const num = Number(document.getElementById('num1').value);
+            try {
+                const result = squareRoot(num);
+                document.getElementById('result').textContent = `Square root of ${num} = ${result}`;
+            } catch (error) {
+                document.getElementById('result').textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
