@@ -42,22 +42,32 @@ export const sqrt = (a: number): number => {
     return Math.sqrt(a);
 };
 
-export interface BhaskaraResult {
-    x1: number;
-    x2: number;
-}
-
-export const bhaskara = (a: number, b: number, c: number): BhaskaraResult => {
+export const bhaskara = (a: number, b: number, c: number): { x1: number | null, x2: number | null, discriminant: number } => {
     if (a === 0) {
-        throw new Error('Not a quadratic equation (a = 0)');
+        throw new Error('Coefficient "a" cannot be zero - not a quadratic equation');
+    }
+
+    if (!Number.isFinite(a) || !Number.isFinite(b) || !Number.isFinite(c)) {
+        throw new Error('All coefficients must be finite numbers');
+    }
+
+    const discriminant = b * b - 4 * a * c;
+    
+    if (discriminant < 0) {
+        return {
+            x1: null,
+            x2: null,
+            discriminant: discriminant
+        };
     }
     
-    const delta = b * b - 4 * a * c;
-    if (delta < 0) {
-        throw new Error('No real roots exist');
-    }
+    const sqrtDiscriminant = Math.sqrt(discriminant);
+    const x1 = (-b + sqrtDiscriminant) / (2 * a);
+    const x2 = (-b - sqrtDiscriminant) / (2 * a);
     
-    const x1 = (-b + Math.sqrt(delta)) / (2 * a);
-    const x2 = (-b - Math.sqrt(delta)) / (2 * a);
-    return { x1, x2 };
+    return {
+        x1: x1,
+        x2: x2,
+        discriminant: discriminant
+    };
 };
