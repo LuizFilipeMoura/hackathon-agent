@@ -41,3 +41,23 @@ export const sqrt = (a: number): number => {
     }
     return Math.sqrt(a);
 };
+
+export interface BhaskaraResult {
+    x1: number;
+    x2: number;
+}
+
+export const bhaskara = (a: number, b: number, c: number): BhaskaraResult => {
+    if (a === 0) {
+        throw new Error('Not a quadratic equation (a = 0)');
+    }
+    
+    const delta = b * b - 4 * a * c;
+    if (delta < 0) {
+        throw new Error('No real roots exist');
+    }
+    
+    const x1 = (-b + Math.sqrt(delta)) / (2 * a);
+    const x2 = (-b - Math.sqrt(delta)) / (2 * a);
+    return { x1, x2 };
+};
