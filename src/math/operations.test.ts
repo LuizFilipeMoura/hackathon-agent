@@ -1,4 +1,4 @@
-import { sum, subtract, multiply, divide, exponentiate } from './operations';
+import { sum, subtract, multiply, divide, exponentiate, sqrt } from './operations';
 
 describe('Math Operations', () => {
   describe('sum', () => {
@@ -99,6 +99,28 @@ describe('Math Operations', () => {
 
     it('should throw error for negative exponents', () => {
       expect(() => exponentiate(2, -1)).toThrow('Negative exponents are not supported');
+    });
+  });
+
+  describe('sqrt', () => {
+    it('should calculate square root of positive numbers correctly', () => {
+      expect(sqrt(9)).toBe(3);
+      expect(sqrt(16)).toBe(4);
+      expect(sqrt(25)).toBe(5);
+    });
+
+    it('should handle zero', () => {
+      expect(sqrt(0)).toBe(0);
+    });
+
+    it('should handle decimal results', () => {
+      expect(sqrt(2)).toBeCloseTo(1.4142135623730951);
+      expect(sqrt(3)).toBeCloseTo(1.7320508075688772);
+    });
+
+    it('should throw error for negative numbers', () => {
+      expect(() => sqrt(-1)).toThrow('Square root of negative numbers is not supported');
+      expect(() => sqrt(-4)).toThrow('Square root of negative numbers is not supported');
     });
   });
 });
