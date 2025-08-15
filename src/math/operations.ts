@@ -62,3 +62,19 @@ export const bhaskara = (a: number, b: number, c: number): BhaskaraResult => {
 
     return { x1, x2 };
 };
+
+export const sin = (degrees: number): number => {
+    return Math.sin(degrees * Math.PI / 180);
+};
+
+export const cos = (degrees: number): number => {
+    return Math.cos(degrees * Math.PI / 180);
+};
+
+export const tan = (degrees: number): number => {
+    const tanResult = Math.tan(degrees * Math.PI / 180);
+    if (!isFinite(tanResult)) {
+        throw new Error('Tangent is undefined for this angle');
+    }
+    return tanResult;
+};
