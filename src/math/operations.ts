@@ -35,9 +35,9 @@ export const exponentiate = (base: number, exponent: number): number => {
     return Math.pow(base, exponent);
 };
 
-export const squareRoot = (x: number): number => {
-    if (x < 0) {
-        throw new Error('Square root of negative numbers is not supported');
+export const squareRoot = (n: number): number => {
+    if (n < 0) {
+        throw new Error('Cannot calculate square root of negative numbers');
     }
-    return Math.sqrt(x);
+    return Math.sqrt(n);
 };
