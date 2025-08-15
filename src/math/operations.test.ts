@@ -1,4 +1,4 @@
-import { sum, subtract, multiply, divide, exponentiate, sqrt } from './operations';
+import { sum, subtract, multiply, divide, exponentiate, sqrt, bhaskara } from './operations';
 
 describe('Math Operations', () => {
   describe('sum', () => {
@@ -121,6 +121,38 @@ describe('Math Operations', () => {
     it('should throw error for negative numbers', () => {
       expect(() => sqrt(-1)).toThrow('Square root of negative numbers is not supported');
       expect(() => sqrt(-4)).toThrow('Square root of negative numbers is not supported');
+    });
+  });
+
+  describe('bhaskara', () => {
+    it('should solve quadratic equation with integer roots', () => {
+      // x² - 5x + 6 = 0 (roots: 2 and 3)
+      const result = bhaskara(1, -5, 6);
+      expect(result.x1).toBe(3);
+      expect(result.x2).toBe(2);
+    });
+
+    it('should solve quadratic equation with decimal roots', () => {
+      // x² - 3x + 2 = 0 (roots: 2 and 1)
+      const result = bhaskara(1, -3, 2);
+      expect(result.x1).toBe(2);
+      expect(result.x2).toBe(1);
+    });
+
+    it('should handle equations with a coefficient other than 1', () => {
+      // 2x² - 8x + 6 = 0 (roots: 3 and 1)
+      const result = bhaskara(2, -8, 6);
+      expect(result.x1).toBe(3);
+      expect(result.x2).toBe(1);
+    });
+
+    it('should throw error when a is zero', () => {
+      expect(() => bhaskara(0, 2, 1)).toThrow('Not a quadratic equation: a cannot be zero');
+    });
+
+    it('should throw error when there are no real roots', () => {
+      // x² + x + 1 = 0 (no real roots)
+      expect(() => bhaskara(1, 1, 1)).toThrow('No real roots: delta is negative');
     });
   });
 });
