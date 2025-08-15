@@ -73,6 +73,17 @@
         .double-input.hidden {
             display: none;
         }
+        .triple-input {
+            display: none;
+        }
+        .triple-input.visible {
+            display: block;
+        }
+        .input-label {
+            display: inline-block;
+            width: 20px;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -88,12 +99,27 @@
         <div class="input-group single-input" id="singleInput">
             <input type="number" id="num" placeholder="Number">
         </div>
+        <div class="input-group triple-input" id="tripleInput">
+            <div>
+                <span class="input-label">a:</span>
+                <input type="number" id="a" placeholder="a">
+            </div>
+            <div>
+                <span class="input-label">b:</span>
+                <input type="number" id="b" placeholder="b">
+            </div>
+            <div>
+                <span class="input-label">c:</span>
+                <input type="number" id="c" placeholder="c">
+            </div>
+        </div>
         <div class="operations">
             <button onclick="calculate('sum')">Add (+)</button>
             <button onclick="calculate('subtract')">Subtract (-)</button>
             <button onclick="calculate('multiply')">Multiply (×)</button>
             <button onclick="calculate('divide')">Divide (÷)</button>
             <button onclick="calculate('sqrt')">Square Root (√)</button>
+            <button onclick="calculate('bhaskara')">Bhaskara (ax² + bx + c = 0)</button>
         </div>
 
         <div id="result">
@@ -102,18 +128,23 @@
     </div>
 
     <script type="module">
-        import { sum, subtract, multiply, divide, sqrt } from './math/operations.js';
+        import { sum, subtract, multiply, divide, sqrt, bhaskara } from './math/operations.js';
 
-        function toggleInputs(showSingle) {
+        function toggleInputs(mode) {
             const singleInput = document.getElementById('singleInput');
             const doubleInputs = document.getElementById('doubleInputs');
+            const tripleInput = document.getElementById('tripleInput');
             
-            if (showSingle) {
+            singleInput.classList.remove('visible');
+            doubleInputs.classList.remove('hidden');
+            tripleInput.classList.remove('visible');
+            
+            if (mode === 'single') {
                 singleInput.classList.add('visible');
                 doubleInputs.classList.add('hidden');
-            } else {
-                singleInput.classList.remove('visible');
-                doubleInputs.classList.remove('hidden');
+            } else if (mode === 'triple') {
+                tripleInput.classList.add('visible');
+                doubleInputs.classList.add('hidden');
             }
         }
 
@@ -121,15 +152,29 @@
             let result;
             try {
                 if (operation === 'sqrt') {
-                    toggleInputs(true);
+                    toggleInputs('single');
                     const num = parseFloat(document.getElementById('num').value);
                     if (isNaN(num)) {
                         document.getElementById('output').textContent = 'Please enter a valid number';
                         return;
                     }
                     result = sqrt(num);
+                    document.getElementById('output').textContent = result;
+                } else if (operation === 'bhaskara') {
+                    toggleInputs('triple');
+                    const a = parseFloat(document.getElementById('a').value);
+                    const b = parseFloat(document.getElementById('b').value);
+                    const c = parseFloat(document.getElementById('c').value);
+                    
+                    if (isNaN(a) || isNaN(b) || isNaN(c)) {
+                        document.getElementById('output').textContent = 'Please enter valid numbers for a, b, and c';
+                        return;
+                    }
+                    
+                    const roots = bhaskara(a, b, c);
+                    document.getElementById('output').textContent = `x₁ = ${roots.x1}, x₂ = ${roots.x2}`;
                 } else {
-                    toggleInputs(false);
+                    toggleInputs('double');
                     const num1 = parseFloat(document.getElementById('num1').value);
                     const num2 = parseFloat(document.getElementById('num2').value);
                     if (isNaN(num1) || isNaN(num2)) {
@@ -150,8 +195,8 @@
                             result = divide(num1, num2);
                             break;
                     }
+                    document.getElementById('output').textContent = result;
                 }
-                document.getElementById('output').textContent = result;
             } catch (error) {
                 document.getElementById('output').textContent = error.message;
             }
