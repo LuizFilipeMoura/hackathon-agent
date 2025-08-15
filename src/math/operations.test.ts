@@ -1,4 +1,4 @@
-import { sum, subtract, multiply, divide, exponentiate, sqrt, bhaskara, sin, cos, tan, factorial } from './operations';
+import { sum, subtract, multiply, divide, exponentiate, sqrt, bhaskara, sin, cos, tan, factorial, calculatePercentage } from './operations';
 
 describe('Math Operations', () => {
   describe('sum', () => {
@@ -238,6 +238,60 @@ describe('Math Operations', () => {
     it('should throw error for non-integer numbers', () => {
       expect(() => factorial(1.5)).toThrow('Factorial is only defined for integers');
       expect(() => factorial(2.7)).toThrow('Factorial is only defined for integers');
+    });
+  });
+
+  describe('calculatePercentage', () => {
+    it('should calculate value when given percentage and total', () => {
+      const result = calculatePercentage({ percentage: 25, total: 200 });
+      expect(result.value).toBe(50);
+      expect(result.percentage).toBe(25);
+      expect(result.total).toBe(200);
+    });
+
+    it('should calculate percentage when given value and total', () => {
+      const result = calculatePercentage({ value: 30, total: 150 });
+      expect(result.value).toBe(30);
+      expect(result.percentage).toBe(20);
+      expect(result.total).toBe(150);
+    });
+
+    it('should calculate total when given value and percentage', () => {
+      const result = calculatePercentage({ value: 45, percentage: 30 });
+      expect(result.value).toBe(45);
+      expect(result.percentage).toBe(30);
+      expect(result.total).toBe(150);
+    });
+
+    it('should handle edge cases', () => {
+      expect(calculatePercentage({ value: 0, total: 100 }).percentage).toBe(0);
+      expect(calculatePercentage({ value: 100, total: 100 }).percentage).toBe(100);
+      expect(calculatePercentage({ percentage: 100, total: 50 }).value).toBe(50);
+    });
+
+    it('should throw error for invalid inputs', () => {
+      expect(() => calculatePercentage({}))
+        .toThrow('Exactly two parameters must be provided');
+      expect(() => calculatePercentage({ value: 10 }))
+        .toThrow('Exactly two parameters must be provided');
+      expect(() => calculatePercentage({ value: 10, percentage: 20, total: 30 }))
+        .toThrow('Exactly two parameters must be provided');
+    });
+
+    it('should throw error for negative values', () => {
+      expect(() => calculatePercentage({ percentage: -10, total: 100 }))
+        .toThrow('Percentage cannot be negative');
+      expect(() => calculatePercentage({ value: -10, total: 100 }))
+        .toThrow('Value cannot be negative');
+      expect(() => calculatePercentage({ value: 10, total: -100 }))
+        .toThrow('Total cannot be negative');
+    });
+
+    it('should throw error for invalid zero cases', () => {
+      expect(() => calculatePercentage({ value: 10, percentage: 0 }))
+        .toThrow('Percentage cannot be zero when calculating total');
+      expect(() => calculatePercentage({ value: 10, total: 0 }))
+        .toThrow('Total cannot be zero when calculating percentage');
     });
   });
 });

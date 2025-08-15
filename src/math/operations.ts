@@ -94,3 +94,46 @@ export const factorial = (n: number): number => {
     }
     return n * factorial(n - 1);
 };
+
+export interface PercentageCalculation {
+    value?: number;      // x in "x is y% of z"
+    percentage?: number; // y in "x is y% of z"
+    total?: number;      // z in "x is y% of z"
+}
+
+export const calculatePercentage = (params: PercentageCalculation): Required<PercentageCalculation> => {
+    const { value, percentage, total } = params;
+    const result: Required<PercentageCalculation> = { value: 0, percentage: 0, total: 0 };
+
+    // Validate inputs
+    if (Object.keys(params).length !== 2) {
+        throw new Error('Exactly two parameters must be provided');
+    }
+
+    // Calculate missing value based on provided parameters
+    if (percentage !== undefined && total !== undefined) {
+        if (percentage < 0) throw new Error('Percentage cannot be negative');
+        if (total < 0) throw new Error('Total cannot be negative');
+        result.percentage = percentage;
+        result.total = total;
+        result.value = (percentage / 100) * total;
+    } else if (value !== undefined && total !== undefined) {
+        if (value < 0) throw new Error('Value cannot be negative');
+        if (total < 0) throw new Error('Total cannot be negative');
+        if (total === 0) throw new Error('Total cannot be zero when calculating percentage');
+        result.value = value;
+        result.total = total;
+        result.percentage = (value / total) * 100;
+    } else if (value !== undefined && percentage !== undefined) {
+        if (value < 0) throw new Error('Value cannot be negative');
+        if (percentage < 0) throw new Error('Percentage cannot be negative');
+        if (percentage === 0) throw new Error('Percentage cannot be zero when calculating total');
+        result.value = value;
+        result.percentage = percentage;
+        result.total = (value * 100) / percentage;
+    } else {
+        throw new Error('Invalid combination of parameters');
+    }
+
+    return result;
+};
