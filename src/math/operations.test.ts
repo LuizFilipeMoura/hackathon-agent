@@ -1,4 +1,4 @@
-import { sum, subtract, multiply, divide, exponentiate, sqrt, bhaskara } from './operations';
+import { sum, subtract, multiply, divide, exponentiate, sqrt, bhaskara, sin, cos, tan } from './operations';
 
 describe('Math Operations', () => {
   describe('sum', () => {
@@ -153,6 +153,67 @@ describe('Math Operations', () => {
     it('should throw error when there are no real roots', () => {
       // x² + x + 1 = 0 (no real roots)
       expect(() => bhaskara(1, 1, 1)).toThrow('No real roots: delta is negative');
+    });
+  });
+
+  describe('sin', () => {
+    it('should calculate sine for common angles correctly', () => {
+      expect(sin(0)).toBeCloseTo(0);
+      expect(sin(30)).toBeCloseTo(0.5);
+      expect(sin(45)).toBeCloseTo(0.7071067811865476);
+      expect(sin(60)).toBeCloseTo(0.8660254037844386);
+      expect(sin(90)).toBeCloseTo(1);
+    });
+
+    it('should handle negative angles', () => {
+      expect(sin(-30)).toBeCloseTo(-0.5);
+      expect(sin(-90)).toBeCloseTo(-1);
+    });
+
+    it('should handle angles > 360', () => {
+      expect(sin(390)).toBeCloseTo(sin(30));
+      expect(sin(450)).toBeCloseTo(sin(90));
+    });
+  });
+
+  describe('cos', () => {
+    it('should calculate cosine for common angles correctly', () => {
+      expect(cos(0)).toBeCloseTo(1);
+      expect(cos(30)).toBeCloseTo(0.8660254037844386);
+      expect(cos(45)).toBeCloseTo(0.7071067811865476);
+      expect(cos(60)).toBeCloseTo(0.5);
+      expect(cos(90)).toBeCloseTo(0);
+    });
+
+    it('should handle negative angles', () => {
+      expect(cos(-30)).toBeCloseTo(0.8660254037844386);
+      expect(cos(-90)).toBeCloseTo(0);
+    });
+
+    it('should handle angles > 360', () => {
+      expect(cos(390)).toBeCloseTo(cos(30));
+      expect(cos(450)).toBeCloseTo(cos(90));
+    });
+  });
+
+  describe('tan', () => {
+    it('should calculate tangent for common angles correctly', () => {
+      expect(tan(0)).toBeCloseTo(0);
+      expect(tan(45)).toBeCloseTo(1);
+    });
+
+    it('should throw error for undefined tangent values', () => {
+      expect(() => tan(90)).toThrow('Tangent is undefined for degrees that are odd multiples of 90');
+      expect(() => tan(270)).toThrow('Tangent is undefined for degrees that are odd multiples of 90');
+    });
+
+    it('should handle negative angles', () => {
+      expect(tan(-45)).toBeCloseTo(-1);
+    });
+
+    it('should handle angles > 360', () => {
+      expect(tan(405)).toBeCloseTo(1);
+      expect(() => tan(450)).toThrow('Tangent is undefined for degrees that are odd multiples of 90');
     });
   });
 });
