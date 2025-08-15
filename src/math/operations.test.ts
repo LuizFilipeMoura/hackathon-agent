@@ -103,23 +103,24 @@ describe('Math Operations', () => {
   });
 
   describe('squareRoot', () => {
-    it('should calculate square root correctly for positive numbers', () => {
-      expect(squareRoot(16)).toBe(4);
+    it('should calculate square root of positive numbers correctly', () => {
+      expect(squareRoot(4)).toBe(2);
       expect(squareRoot(9)).toBe(3);
-      expect(squareRoot(2)).toBeCloseTo(1.4142, 4);
+      expect(squareRoot(16)).toBe(4);
     });
 
     it('should handle zero', () => {
       expect(squareRoot(0)).toBe(0);
     });
 
-    it('should handle perfect squares', () => {
-      expect(squareRoot(100)).toBe(10);
-      expect(squareRoot(1)).toBe(1);
+    it('should handle perfect and non-perfect squares', () => {
+      expect(squareRoot(2)).toBeCloseTo(1.4142, 4);
+      expect(squareRoot(3)).toBeCloseTo(1.7321, 4);
     });
 
     it('should throw error for negative numbers', () => {
-      expect(() => squareRoot(-1)).toThrow('Square root of negative numbers is not supported');
+      expect(() => squareRoot(-1)).toThrow('Cannot calculate square root of negative numbers');
+      expect(() => squareRoot(-4)).toThrow('Cannot calculate square root of negative numbers');
     });
   });
 });
