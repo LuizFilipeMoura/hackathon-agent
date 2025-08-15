@@ -1,4 +1,4 @@
-import { sum, subtract, multiply, divide, exponentiate, sqrt } from './operations';
+import { sum, subtract, multiply, divide, exponentiate, sqrt, bhaskara } from './operations';
 
 describe('Math Operations', () => {
   describe('sum', () => {
@@ -121,6 +121,33 @@ describe('Math Operations', () => {
     it('should throw error for negative numbers', () => {
       expect(() => sqrt(-1)).toThrow('Square root of negative numbers is not supported');
       expect(() => sqrt(-4)).toThrow('Square root of negative numbers is not supported');
+    });
+  });
+
+  describe('bhaskara', () => {
+    it('should calculate two distinct real roots correctly', () => {
+      expect(bhaskara(1, -5, 6)).toEqual({x1: 3, x2: 2});
+      expect(bhaskara(1, -3, 2)).toEqual({x1: 2, x2: 1});
+    });
+
+    it('should handle single root case (delta = 0)', () => {
+      expect(bhaskara(1, 2, 1)).toEqual({x1: -1, x2: -1});
+      expect(bhaskara(1, 4, 4)).toEqual({x1: -2, x2: -2});
+    });
+
+    it('should handle negative coefficients', () => {
+      expect(bhaskara(-1, 2, -1)).toEqual({x1: 1, x2: 1});
+      expect(bhaskara(2, -7, 3)).toEqual({x1: 3, x2: 0.5});
+    });
+
+    it('should throw error for non-real roots', () => {
+      expect(() => bhaskara(1, 1, 1)).toThrow('No real roots exist');
+      expect(() => bhaskara(2, 2, 2)).toThrow('No real roots exist');
+    });
+
+    it('should throw error when not a quadratic equation', () => {
+      expect(() => bhaskara(0, 1, 1)).toThrow('Not a quadratic equation (a = 0)');
+      expect(() => bhaskara(0, 5, 2)).toThrow('Not a quadratic equation (a = 0)');
     });
   });
 });
