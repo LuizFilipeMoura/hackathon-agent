@@ -152,7 +152,7 @@ class GitHubIssueAgent {
         // --- prompts --------------------------------------------------------------
         const systemPrompt = `You are a GitHub issue solver with access to GitHub MCP tools. 
 You can use tools like:
-- get_file_contents
+- get_file_contents (this is used to get all files from the repository, by sending "/") as the request
 - create_branch  
 - create_or_update_file
 - create_pull_request
@@ -160,7 +160,7 @@ You can use tools like:
 And many others.
 
 Your task is to solve the given GitHub issue by:
-1. Understanding the repository and issue context
+1. Understanding the repository, grab ALL files and folders to get a vision of the whole, don't create any new files before checking all the important folders and issue context
 2. Creating a solution plan
 3. Implementing the fix
 4. Creating a pull request
@@ -183,6 +183,7 @@ ${similarBlock ? `${similarBlock}\n` : ""}.
 **Labels**: ${issue.labels?.map((l: any) => l.name).join(', ') || 'None'}
 
 Start by exploring the repository structure and understanding the codebase, then implement a solution.`;
+
 
         // --- conversation state ---------------------------------------------------
         const messages: Array<{ role: "user" | "assistant"; content: any }> = [
