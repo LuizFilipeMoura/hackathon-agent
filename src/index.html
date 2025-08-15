@@ -112,7 +112,7 @@
         </div>
 
         <div class="input-group single-input" id="singleInput">
-            <input type="number" id="num" placeholder="Number">
+            <input type="number" id="num" placeholder="Enter degrees">
         </div>
 
         <div class="operations">
@@ -122,6 +122,9 @@
             <button onclick="calculate('divide')">Divide (÷)</button>
             <button onclick="calculate('sqrt')">Square Root (√)</button>
             <button onclick="calculate('bhaskara')">Solve Quadratic</button>
+            <button onclick="calculate('sin')">Sin (°)</button>
+            <button onclick="calculate('cos')">Cos (°)</button>
+            <button onclick="calculate('tan')">Tan (°)</button>
         </div>
 
         <div id="result">
@@ -130,7 +133,7 @@
     </div>
 
     <script type="module">
-        import { sum, subtract, multiply, divide, sqrt, bhaskara } from './math/operations.js';
+        import { sum, subtract, multiply, divide, sqrt, bhaskara, sin, cos, tan } from './math/operations.js';
 
         function toggleInputs(mode) {
             const singleInput = document.getElementById('singleInput');
@@ -175,6 +178,25 @@
                     
                     const roots = bhaskara(a, b, c);
                     document.getElementById('output').textContent = `x₁ = ${roots.x1.toFixed(2)}, x₂ = ${roots.x2.toFixed(2)}`;
+                } else if (['sin', 'cos', 'tan'].includes(operation)) {
+                    toggleInputs('single');
+                    const degrees = parseFloat(document.getElementById('num').value);
+                    if (isNaN(degrees)) {
+                        document.getElementById('output').textContent = 'Please enter a valid number';
+                        return;
+                    }
+                    switch(operation) {
+                        case 'sin':
+                            result = sin(degrees);
+                            break;
+                        case 'cos':
+                            result = cos(degrees);
+                            break;
+                        case 'tan':
+                            result = tan(degrees);
+                            break;
+                    }
+                    document.getElementById('output').textContent = result.toFixed(4);
                 } else {
                     toggleInputs('double');
                     const num1 = parseFloat(document.getElementById('num1').value);
