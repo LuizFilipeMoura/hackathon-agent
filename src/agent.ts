@@ -281,8 +281,6 @@ class GitHubIssueAgent {
         const tools = await this.getAvailableTools();
         console.log("[analyzeAndSolve] Tools provided to model:", tools.length);
 
-        const maxSteps = 15;      // give Claude a few cycles
-        let step = 0;
         let prUrl: string | undefined;
         let branch: string | undefined;
 
