@@ -34,3 +34,10 @@ export const exponentiate = (base: number, exponent: number): number => {
     
     return Math.pow(base, exponent);
 };
+
+export const sqrt = (a: number): number => {
+    if (a < 0) {
+        throw new Error('Square root of negative numbers is not supported');
+    }
+    return Math.sqrt(a);
+};
