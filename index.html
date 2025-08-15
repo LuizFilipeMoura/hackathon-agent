@@ -16,97 +16,120 @@
             padding: 20px;
             border-radius: 5px;
         }
-        .input-group {
-            margin-bottom: 10px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
+        .operation {
+            margin-bottom: 15px;
         }
         input[type="number"] {
-            width: 200px;
+            width: 100px;
             padding: 5px;
         }
         button {
-            margin: 5px;
             padding: 5px 10px;
+            margin-left: 10px;
         }
         .result {
-            margin-top: 20px;
+            margin-top: 5px;
             font-weight: bold;
         }
         .error {
             color: red;
-            display: none;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="calculator">
-        <h1>Calculator</h1>
-        <div class="input-group">
-            <label for="number1">Number 1:</label>
-            <input type="number" id="number1">
+        <h2>Calculator</h2>
+        
+        <div class="operation">
+            <h3>Basic Operations</h3>
+            <input type="number" id="num1" placeholder="Number 1">
+            <select id="operator">
+                <option value="sum">+</option>
+                <option value="subtract">-</option>
+                <option value="multiply">×</option>
+                <option value="divide">÷</option>
+            </select>
+            <input type="number" id="num2" placeholder="Number 2">
+            <button onclick="calculate()">Calculate</button>
+            <div id="basicResult" class="result"></div>
         </div>
-        <div class="input-group" id="number2-group">
-            <label for="number2">Number 2:</label>
-            <input type="number" id="number2">
+
+        <div class="operation">
+            <h3>Square Root</h3>
+            <input type="number" id="sqrtNum" placeholder="Number">
+            <button onclick="calculateSquareRoot()">√</button>
+            <div id="sqrtResult" class="result"></div>
         </div>
-        <div class="buttons">
-            <button onclick="calculate('sum')">Add</button>
-            <button onclick="calculate('subtract')">Subtract</button>
-            <button onclick="calculate('multiply')">Multiply</button>
-            <button onclick="calculate('divide')">Divide</button>
-            <button onclick="calculate('exponentiate')">Power</button>
-            <button onclick="calculate('squareRoot')">Square Root</button>
+
+        <div class="operation">
+            <h3>Exponentiation</h3>
+            <input type="number" id="baseNum" placeholder="Base">
+            <input type="number" id="exponent" placeholder="Exponent">
+            <button onclick="calculateExponent()">Calculate</button>
+            <div id="expResult" class="result"></div>
         </div>
-        <div class="result" id="result"></div>
-        <div class="error" id="error"></div>
     </div>
 
     <script type="module">
-        import { sum, subtract, multiply, divide, exponentiate, squareRoot } from './src/math/operations.js';
+        import { sum, subtract, multiply, divide, squareRoot, exponentiate } from './src/math/operations.js';
 
-        window.calculate = function(operation) {
-            const num1 = parseFloat(document.getElementById('number1').value);
-            const num2 = parseFloat(document.getElementById('number2').value);
-            const resultDiv = document.getElementById('result');
-            const errorDiv = document.getElementById('error');
-            const number2Group = document.getElementById('number2-group');
-
-            // Reset displays
-            errorDiv.style.display = 'none';
-            resultDiv.textContent = '';
+        window.calculate = function() {
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+            const operator = document.getElementById('operator').value;
+            const resultDiv = document.getElementById('basicResult');
 
             try {
                 let result;
-                if (operation === 'squareRoot') {
-                    number2Group.style.display = 'none';
-                    result = squareRoot(num1);
-                } else {
-                    number2Group.style.display = 'block';
-                    switch (operation) {
-                        case 'sum':
-                            result = sum(num1, num2);
-                            break;
-                        case 'subtract':
-                            result = subtract(num1, num2);
-                            break;
-                        case 'multiply':
-                            result = multiply(num1, num2);
-                            break;
-                        case 'divide':
-                            result = divide(num1, num2);
-                            break;
-                        case 'exponentiate':
-                            result = exponentiate(num1, num2);
-                            break;
-                    }
+                switch(operator) {
+                    case 'sum':
+                        result = sum(num1, num2);
+                        break;
+                    case 'subtract':
+                        result = subtract(num1, num2);
+                        break;
+                    case 'multiply':
+                        result = multiply(num1, num2);
+                        break;
+                    case 'divide':
+                        result = divide(num1, num2);
+                        break;
                 }
                 resultDiv.textContent = `Result: ${result}`;
+                resultDiv.className = 'result';
             } catch (error) {
-                errorDiv.textContent = error.message;
-                errorDiv.style.display = 'block';
+                resultDiv.textContent = error.message;
+                resultDiv.className = 'result error';
+            }
+        };
+
+        window.calculateSquareRoot = function() {
+            const num = parseFloat(document.getElementById('sqrtNum').value);
+            const resultDiv = document.getElementById('sqrtResult');
+
+            try {
+                const result = squareRoot(num);
+                resultDiv.textContent = `Result: ${result}`;
+                resultDiv.className = 'result';
+            } catch (error) {
+                resultDiv.textContent = error.message;
+                resultDiv.className = 'result error';
+            }
+        };
+
+        window.calculateExponent = function() {
+            const base = parseFloat(document.getElementById('baseNum').value);
+            const exp = parseFloat(document.getElementById('exponent').value);
+            const resultDiv = document.getElementById('expResult');
+
+            try {
+                const result = exponentiate(base, exp);
+                resultDiv.textContent = `Result: ${result}`;
+                resultDiv.className = 'result';
+            } catch (error) {
+                resultDiv.textContent = error.message;
+                resultDiv.className = 'result error';
             }
         };
     </script>
