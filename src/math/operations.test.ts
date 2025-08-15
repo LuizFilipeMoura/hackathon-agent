@@ -1,4 +1,4 @@
-import { sum, subtract, multiply, divide, exponentiate, sqrt, bhaskara, sin, cos, tan } from './operations';
+import { sum, subtract, multiply, divide, exponentiate, sqrt, bhaskara, sin, cos, tan, factorial } from './operations';
 
 describe('Math Operations', () => {
   describe('sum', () => {
@@ -214,6 +214,30 @@ describe('Math Operations', () => {
     it('should handle angles > 360', () => {
       expect(tan(405)).toBeCloseTo(1);
       expect(() => tan(450)).toThrow('Tangent is undefined for degrees that are odd multiples of 90');
+    });
+  });
+
+  describe('factorial', () => {
+    it('should calculate factorial for positive integers correctly', () => {
+      expect(factorial(0)).toBe(1);
+      expect(factorial(1)).toBe(1);
+      expect(factorial(5)).toBe(120);
+    });
+
+    it('should handle edge cases', () => {
+      expect(factorial(2)).toBe(2);
+      expect(factorial(3)).toBe(6);
+      expect(factorial(4)).toBe(24);
+    });
+
+    it('should throw error for negative numbers', () => {
+      expect(() => factorial(-1)).toThrow('Factorial is not defined for negative numbers');
+      expect(() => factorial(-5)).toThrow('Factorial is not defined for negative numbers');
+    });
+
+    it('should throw error for non-integer numbers', () => {
+      expect(() => factorial(1.5)).toThrow('Factorial is only defined for integers');
+      expect(() => factorial(2.7)).toThrow('Factorial is only defined for integers');
     });
   });
 });

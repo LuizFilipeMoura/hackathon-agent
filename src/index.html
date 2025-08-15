@@ -112,7 +112,7 @@
         </div>
 
         <div class="input-group single-input" id="singleInput">
-            <input type="number" id="num" placeholder="Enter degrees">
+            <input type="number" id="num" placeholder="Enter number">
         </div>
 
         <div class="operations">
@@ -121,6 +121,7 @@
             <button onclick="calculate('multiply')">Multiply (×)</button>
             <button onclick="calculate('divide')">Divide (÷)</button>
             <button onclick="calculate('sqrt')">Square Root (√)</button>
+            <button onclick="calculate('factorial')">Factorial (!)</button>
             <button onclick="calculate('bhaskara')">Solve Quadratic</button>
             <button onclick="calculate('sin')">Sin (°)</button>
             <button onclick="calculate('cos')">Cos (°)</button>
@@ -133,7 +134,7 @@
     </div>
 
     <script type="module">
-        import { sum, subtract, multiply, divide, sqrt, bhaskara, sin, cos, tan } from './math/operations.js';
+        import { sum, subtract, multiply, divide, sqrt, bhaskara, sin, cos, tan, factorial } from './math/operations.js';
 
         function toggleInputs(mode) {
             const singleInput = document.getElementById('singleInput');
@@ -156,15 +157,33 @@
         window.calculate = async function(operation) {
             let result;
             try {
-                if (operation === 'sqrt') {
+                if (operation === 'sqrt' || operation === 'factorial' || ['sin', 'cos', 'tan'].includes(operation)) {
                     toggleInputs('single');
                     const num = parseFloat(document.getElementById('num').value);
                     if (isNaN(num)) {
                         document.getElementById('output').textContent = 'Please enter a valid number';
                         return;
                     }
-                    result = sqrt(num);
-                    document.getElementById('output').textContent = result;
+                    
+                    switch(operation) {
+                        case 'sqrt':
+                            result = sqrt(num);
+                            break;
+                        case 'factorial':
+                            result = factorial(num);
+                            break;
+                        case 'sin':
+                            result = sin(num);
+                            break;
+                        case 'cos':
+                            result = cos(num);
+                            break;
+                        case 'tan':
+                            result = tan(num);
+                            break;
+                    }
+                    
+                    document.getElementById('output').textContent = operation === 'factorial' ? result : result.toFixed(4);
                 } else if (operation === 'bhaskara') {
                     toggleInputs('triple');
                     const a = parseFloat(document.getElementById('quad-a').value);
@@ -178,25 +197,6 @@
                     
                     const roots = bhaskara(a, b, c);
                     document.getElementById('output').textContent = `x₁ = ${roots.x1.toFixed(2)}, x₂ = ${roots.x2.toFixed(2)}`;
-                } else if (['sin', 'cos', 'tan'].includes(operation)) {
-                    toggleInputs('single');
-                    const degrees = parseFloat(document.getElementById('num').value);
-                    if (isNaN(degrees)) {
-                        document.getElementById('output').textContent = 'Please enter a valid number';
-                        return;
-                    }
-                    switch(operation) {
-                        case 'sin':
-                            result = sin(degrees);
-                            break;
-                        case 'cos':
-                            result = cos(degrees);
-                            break;
-                        case 'tan':
-                            result = tan(degrees);
-                            break;
-                    }
-                    document.getElementById('output').textContent = result.toFixed(4);
                 } else {
                     toggleInputs('double');
                     const num1 = parseFloat(document.getElementById('num1').value);
