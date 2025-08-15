@@ -61,28 +61,16 @@
             align-items: center;
             margin-bottom: 20px;
         }
-        .single-input {
+        .input-group {
             display: none;
         }
-        .single-input.visible {
+        .input-group.visible {
             display: block;
         }
-        .double-input {
-            display: block;
-        }
-        .double-input.hidden {
-            display: none;
-        }
-        .triple-input {
-            display: none;
-        }
-        .triple-input.visible {
-            display: block;
-        }
-        .input-label {
-            display: inline-block;
-            width: 20px;
-            margin-right: 5px;
+        .equation-display {
+            font-family: monospace;
+            font-size: 1.2em;
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -92,26 +80,18 @@
             <h1>Calculator</h1>
             <a href="tutorial.html" class="tutorial-link">How to Use</a>
         </div>
-        <div class="input-group double-input" id="doubleInputs">
+        <div class="input-group" id="doubleInputs">
             <input type="number" id="num1" placeholder="First number">
             <input type="number" id="num2" placeholder="Second number">
         </div>
-        <div class="input-group single-input" id="singleInput">
+        <div class="input-group" id="singleInput">
             <input type="number" id="num" placeholder="Number">
         </div>
-        <div class="input-group triple-input" id="tripleInput">
-            <div>
-                <span class="input-label">a:</span>
-                <input type="number" id="a" placeholder="a">
-            </div>
-            <div>
-                <span class="input-label">b:</span>
-                <input type="number" id="b" placeholder="b">
-            </div>
-            <div>
-                <span class="input-label">c:</span>
-                <input type="number" id="c" placeholder="c">
-            </div>
+        <div class="input-group" id="quadraticInputs">
+            <div class="equation-display">ax² + bx + c = 0</div>
+            <input type="number" id="coefA" placeholder="a">
+            <input type="number" id="coefB" placeholder="b">
+            <input type="number" id="coefC" placeholder="c">
         </div>
         <div class="operations">
             <button onclick="calculate('sum')">Add (+)</button>
@@ -119,7 +99,7 @@
             <button onclick="calculate('multiply')">Multiply (×)</button>
             <button onclick="calculate('divide')">Divide (÷)</button>
             <button onclick="calculate('sqrt')">Square Root (√)</button>
-            <button onclick="calculate('bhaskara')">Bhaskara (ax² + bx + c = 0)</button>
+            <button onclick="calculate('bhaskara')">Solve Quadratic</button>
         </div>
 
         <div id="result">
@@ -133,18 +113,22 @@
         function toggleInputs(mode) {
             const singleInput = document.getElementById('singleInput');
             const doubleInputs = document.getElementById('doubleInputs');
-            const tripleInput = document.getElementById('tripleInput');
+            const quadraticInputs = document.getElementById('quadraticInputs');
             
             singleInput.classList.remove('visible');
-            doubleInputs.classList.remove('hidden');
-            tripleInput.classList.remove('visible');
+            doubleInputs.classList.remove('visible');
+            quadraticInputs.classList.remove('visible');
             
-            if (mode === 'single') {
-                singleInput.classList.add('visible');
-                doubleInputs.classList.add('hidden');
-            } else if (mode === 'triple') {
-                tripleInput.classList.add('visible');
-                doubleInputs.classList.add('hidden');
+            switch(mode) {
+                case 'single':
+                    singleInput.classList.add('visible');
+                    break;
+                case 'double':
+                    doubleInputs.classList.add('visible');
+                    break;
+                case 'quadratic':
+                    quadraticInputs.classList.add('visible');
+                    break;
             }
         }
 
@@ -161,18 +145,25 @@
                     result = sqrt(num);
                     document.getElementById('output').textContent = result;
                 } else if (operation === 'bhaskara') {
-                    toggleInputs('triple');
-                    const a = parseFloat(document.getElementById('a').value);
-                    const b = parseFloat(document.getElementById('b').value);
-                    const c = parseFloat(document.getElementById('c').value);
+                    toggleInputs('quadratic');
+                    const a = parseFloat(document.getElementById('coefA').value);
+                    const b = parseFloat(document.getElementById('coefB').value);
+                    const c = parseFloat(document.getElementById('coefC').value);
                     
                     if (isNaN(a) || isNaN(b) || isNaN(c)) {
-                        document.getElementById('output').textContent = 'Please enter valid numbers for a, b, and c';
+                        document.getElementById('output').textContent = 'Please enter valid coefficients';
                         return;
                     }
                     
-                    const roots = bhaskara(a, b, c);
-                    document.getElementById('output').textContent = `x₁ = ${roots.x1}, x₂ = ${roots.x2}`;
+                    const solution = bhaskara(a, b, c);
+                    if (solution.x1 === null && solution.x2 === null) {
+                        result = `No real roots (discriminant = ${solution.discriminant})`;
+                    } else if (solution.x1 === solution.x2) {
+                        result = `x = ${solution.x1} (double root)`;
+                    } else {
+                        result = `x₁ = ${solution.x1}, x₂ = ${solution.x2}`;
+                    }
+                    document.getElementById('output').textContent = result;
                 } else {
                     toggleInputs('double');
                     const num1 = parseFloat(document.getElementById('num1').value);
@@ -201,6 +192,9 @@
                 document.getElementById('output').textContent = error.message;
             }
         };
+        
+        // Show double inputs by default
+        toggleInputs('double');
     </script>
 </body>
 </html>
